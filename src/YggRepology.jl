@@ -46,20 +46,27 @@ function extract_readme_metadata(readme_text)
     end
     recipe_url = @chain readme_text begin
         replace("\n" => " ") 
-        replace(r".*The originating \[`build_tarballs.jl`\]\((.*)\) script can be found.*" => s"\1")
+        replace(r".*(https://github.com/JuliaPackaging/Yggdrasil/blob/.*.jl\)).*" => s"\1")
     end
     return Dict("source_url" => source_url, "recipe_url" => recipe_url)        
 end
 
 function get_readme_metadata(repository_name, auth)
-    readme_text = get_readme(repository_name, auth)
-    return extract_readme_metadata(readme_text)
+    try
+        readme_text = get_readme(repository_name, auth)
+        return extract_readme_metadata(readme_text)
+    catch
+        return Dict()
+    end
 end
 
 function get_toml_metadata(repository_name, auth)
-    project_toml = get_toml_file(repository.full_name, "Project.toml", myauth)
-    artifacts_toml = get_toml_file(repository.full_name, "Artifacts.toml", myauth)
-
+    try
+        project_toml = get_toml_file(repository.full_name, "Project.toml", myauth)
+        artifacts_toml = get_toml_file(repository.full_name, "Artifacts.toml", myauth)
+    catch 
+        return Dict()
+    end
     binary_name = @chain project_toml["name"] replace("_jll" => "")
     version = project_toml["version"]
 
@@ -84,9 +91,21 @@ function get_binary_info(repository_name, auth)
     )
 end
 
-repository = repository_list[3]
+function gather_all_binary_info()
+    myauth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
+    binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
+    full_binary_metadata = [get_binary_info(repository_name, myauth) for repository_name in binary_repositories[1]]
+    return full_binary_metadata
+end
+
+repository_list_ = repository_list[1:100]
+repository = repository_list[1]
 repository_name = repository.full_name
 
-full_binary_metadata = [get_binary_info(repository_name, myauth) for repository_name in repository_list]
+get_binary_info(repository_name, myauth)
+
+
+
+full_binary_metadata = [get_binary_info(repository_name, myauth) for repository_name in repository_list_]
 
 
