@@ -1,2 +1,4 @@
 [deps]
+Chain = "8be319e6-bccf-4806-a6f7-6fae938471bc"
+GitHub = "bc5e4493-9b4d-5f90-b8aa-2b2bcaad7a26"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
