@@ -1,0 +1,3 @@
+module YggRepology
+
+end
