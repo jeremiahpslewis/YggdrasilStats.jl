@@ -39,16 +39,16 @@ end
 
 function extract_readme_metadata(readme_text)
     source_url = @chain readme_text begin
-        replace("\n" => " ") 
+        replace("\n" => " ")
         replace(r".* have been built from these sources:  (.*)  ## Platforms.*" => s"\1")
         split("* ")
         filter(x -> x != "", _)
     end
     recipe_url = @chain readme_text begin
-        replace("\n" => " ") 
+        replace("\n" => " ")
         replace(r".*(https://github.com/JuliaPackaging/Yggdrasil/blob/.*.jl\)).*" => s"\1")
     end
-    return Dict("source_url" => source_url, "recipe_url" => recipe_url)        
+    return Dict("source_url" => source_url, "recipe_url" => recipe_url)
 end
 
 function get_readme_metadata(repository_name, auth)
@@ -64,7 +64,7 @@ function get_toml_metadata(repository_name, auth)
     try
         project_toml = get_toml_file(repository.full_name, "Project.toml", myauth)
         artifacts_toml = get_toml_file(repository.full_name, "Artifacts.toml", myauth)
-    catch 
+    catch
         return Dict()
     end
     binary_name = @chain project_toml["name"] replace("_jll" => "")
@@ -75,26 +75,24 @@ function get_toml_metadata(repository_name, auth)
     #    "$(_["arch"])-$(_["os"])-$(_["libc"])"
     # end
 
-    return Dict(
-        "binary_name" => binary_name,
-        "version" => version
-    )
-
+    return Dict("binary_name" => binary_name, "version" => version)
 end
 # Sketch in requirements https://repology.org/docs/requirements
-
 
 function get_binary_info(repository_name, auth)
     return Dict(
         get_readme_metadata(repository_name, auth)...,
-        get_toml_metadata(repository_name, auth)...
+        get_toml_metadata(repository_name, auth)...,
     )
 end
 
 function gather_all_binary_info()
     myauth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
     binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
-    full_binary_metadata = [get_binary_info(repository_name, myauth) for repository_name in binary_repositories[1]]
+    full_binary_metadata = [
+        get_binary_info(repository_name, myauth) for
+        repository_name in binary_repositories[1]
+    ]
     return full_binary_metadata
 end
 
@@ -104,8 +102,6 @@ repository_name = repository.full_name
 
 get_binary_info(repository_name, myauth)
 
-
-
-full_binary_metadata = [get_binary_info(repository_name, myauth) for repository_name in repository_list_]
-
-
+full_binary_metadata = [
+    get_binary_info(repository_name, myauth) for repository_name in repository_list_
+]
