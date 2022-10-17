@@ -6,7 +6,6 @@ using GitHub
 using Base64
 using Chain
 using TOML
-using CommonMark
 
 myauth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
 binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
