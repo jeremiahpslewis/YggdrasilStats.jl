@@ -62,8 +62,8 @@ end
 
 function get_toml_metadata(repository_name, auth)
     try
-        project_toml = get_toml_file(repository.full_name, "Project.toml", myauth)
-        artifacts_toml = get_toml_file(repository.full_name, "Artifacts.toml", myauth)
+        project_toml = get_toml_file(repository_name, "Project.toml", myauth)
+        artifacts_toml = get_toml_file(repository_name, "Artifacts.toml", myauth)
     catch
         return Dict()
     end
@@ -105,3 +105,12 @@ get_binary_info(repository_name, myauth)
 full_binary_metadata = [
     get_binary_info(repository_name, myauth) for repository_name in repository_list_
 ]
+
+df = DataFrame(full_binary_metadata)
+
+drop_list(x) = length(x) != 1 ? x : replace(x[1], r".*(https?://.*)" => s"\1")
+
+@chain df begin
+    @transform :source_url = drop_list(:source_url)
+    @subset !(source_url isa String)
+end
