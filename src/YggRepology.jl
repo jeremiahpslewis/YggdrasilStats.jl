@@ -9,7 +9,7 @@ using TOML
 using DataFrames
 using DataFrameMacros
 
-function get_file(repository_name, filename, auth)
+function get_file(repository_name, filename, auth::Github.OAuth2)
     @chain repository_name begin
         file(filename; auth=auth)
         _.content
@@ -18,13 +18,13 @@ function get_file(repository_name, filename, auth)
     end
 end
 
-function get_toml_file(repository_name, filename, auth)
+function get_toml_file(repository_name, filename, auth::Github.OAuth2)
     @chain get_file(repository_name, filename, auth) begin
         TOML.parse
     end
 end
 
-function get_readme(repository_name, auth)
+function get_readme(repository_name, auth::Github.OAuth2)
     @chain repository_name begin
         readme(; auth=auth)
         _.content
@@ -47,7 +47,7 @@ function extract_readme_metadata(readme_text)
     return Dict("source_url" => source_url, "recipe_url" => recipe_url)
 end
 
-function get_readme_metadata(repository_name::String, auth)
+function get_readme_metadata(repository_name::String, auth::Github.OAuth2)
     try
         readme_text = get_readme(repository_name, auth)
         return extract_readme_metadata(readme_text)
@@ -56,7 +56,7 @@ function get_readme_metadata(repository_name::String, auth)
     end
 end
 
-function get_toml_metadata(repository_name::String, auth)
+function get_toml_metadata(repository_name::String, auth::Github.OAuth2)
     try
         project_toml = get_toml_file(repository_name, "Project.toml", myauth)
         artifacts_toml = get_toml_file(repository_name, "Artifacts.toml", myauth)
@@ -77,7 +77,7 @@ function get_toml_metadata(repository_name::String, auth)
 end
 # Sketch in requirements https://repology.org/docs/requirements
 
-function get_binary_info(repository::Repo, auth)
+function get_binary_info(repository::Repo, auth::Github.OAuth2)
     repository_name = repository.full_name
     return Dict(
         get_readme_metadata(repository_name, auth)...,
