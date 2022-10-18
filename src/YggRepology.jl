@@ -96,7 +96,7 @@ function gather_all_binary_info()
     return full_binary_metadata
 end
 
-drop_url_from_list(x) = length(x) != 1 ? x : replace(x[1], r".*(https?://.*)" => s"\1")
+drop_url_from_list(x) = length(x) != 1 ? x : replace(x[1], r" \(SHA256.*" => "", r".*(https?://.*)" => s"\1")
 
 
 function get_patch_directories(source_url)
@@ -136,12 +136,13 @@ df = DataFrame(full_binary_metadata)
 df_bad = @chain df begin
     @transform(:source_url = drop_url_from_list(:source_url), :patch_directories = get_patch_directories(:source_url))
     @subset(!(:source_url isa String))
-    @subset(!(:patch_directories == nothing) & !(:patch_directories isa String))
+    @subset((:patch_directories == nothing) | (:patch_directories isa Array))
 end
 
-df_bad[1, :patch_directories]
+df_bad[4, :source_url][1]
 
 df_bad.source_url in "files in directory"
 
 a = get_patch_directories(df_bad[1, :source_url])
+
 
