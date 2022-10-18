@@ -8,6 +8,7 @@ using Chain
 using TOML
 using DataFrames
 using DataFrameMacros
+using CSV
 
 function get_file(repository_name, filename, auth::GitHub.OAuth2)
     @chain repository_name begin
@@ -96,8 +97,16 @@ function gather_all_binary_info()
     return full_binary_metadata
 end
 
-drop_url_from_list(x) = length(x) != 1 ? x : replace(x[1], r" \(SHA256.*" => "", r".*(https?://.*)" => s"\1")
+function drop_url_from_list(x)
+    x = replace.(x, r" \(SHA256 checksum.*" => "")
+    x = replace.(x, r".*(https?://.*)" => s"\1")
 
+    if length(x) != 1
+        return x
+    else
+        return x[1]
+    end
+end
 
 function get_patch_directories(source_url)
     patch_directories = source_url[occursin.("files in directory", source_url)]
@@ -126,23 +135,16 @@ repository_name = repository.full_name
 get_binary_info(repository, myauth)
 
 full_binary_metadata = [
-    get_binary_info(repository, myauth) for repository in repository_list_
+    get_binary_info(repository, myauth) for repository in repository_list
 ]
 
 df = DataFrame(full_binary_metadata)
 
-
-
-df_bad = @chain df begin
-    @transform(:source_url = drop_url_from_list(:source_url), :patch_directories = get_patch_directories(:source_url))
-    @subset(!(:source_url isa String))
-    @subset((:patch_directories == nothing) | (:patch_directories isa Array))
+# Full dataset
+df = @chain df begin
+    @transform(:source_url = drop_url_from_list(:source_url),
+               :patch_directories = get_patch_directories(:source_url))
+    @transform(:error = !(:source_url isa String) & (:patch_directories == nothing) | (:patch_directories isa Array))
 end
 
-df_bad[4, :source_url][1]
-
-df_bad.source_url in "files in directory"
-
-a = get_patch_directories(df_bad[1, :source_url])
-
-
+CSV.write("full_binary_metadata.csv", df)
