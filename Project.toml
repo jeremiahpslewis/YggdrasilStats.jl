@@ -4,3 +4,6 @@ DataFrameMacros = "75880514-38bc-4a95-a458-c2aea5a3a702"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 GitHub = "bc5e4493-9b4d-5f90-b8aa-2b2bcaad7a26"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+DataFrameMacros = "0.4"
