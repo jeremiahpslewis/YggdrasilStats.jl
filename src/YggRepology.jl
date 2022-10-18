@@ -44,7 +44,7 @@ function extract_readme_metadata(readme_text)
         replace("\n" => " ")
         replace(r".*(https://github.com/JuliaPackaging/Yggdrasil/blob/.*.jl\)).*" => s"\1")
     end
-    return Dict("source_url" => source_url, "recipe_url" => recipe_url)
+    return Dict(:source_url => source_url, :recipe_url => recipe_url)
 end
 
 function get_readme_metadata(repository_name::String, auth::GitHub.OAuth2)
@@ -69,7 +69,7 @@ function get_toml_metadata(repository_name::String, auth::GitHub.OAuth2)
         #    "$(_["arch"])-$(_["os"])-$(_["libc"])"
         # end
     
-        return Dict("binary_name" => binary_name, "version" => version)
+        return Dict(:binary_name => binary_name, :version => version)
     catch
         return Dict()
     end
@@ -98,6 +98,21 @@ end
 
 drop_url_from_list(x) = length(x) != 1 ? x : replace(x[1], r".*(https?://.*)" => s"\1")
 
+
+function get_patch_directories(source_url)
+    patch_directories = source_url[occursin.("files in directory", source_url)]
+    patch_directories = replace.(patch_directories, r".*(https://github.com/.*/bundled).*" => s"\1")
+
+    if length(patch_directories) == 1
+        return patch_directories[1]
+    elseif length(patch_directories) == 0
+        return nothing
+    else
+        return patch_directories
+    end
+end
+
+
 myauth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
 binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
 
@@ -118,7 +133,15 @@ df = DataFrame(full_binary_metadata)
 
 
 
-@chain df begin
-    @transform :source_url = drop_url_from_list(:source_url)
-    @subset !(:source_url isa String)
+df_bad = @chain df begin
+    @transform(:source_url = drop_url_from_list(:source_url), :patch_directories = get_patch_directories(:source_url))
+    @subset(!(:source_url isa String))
+    @subset(!(:patch_directories == nothing) & !(:patch_directories isa String))
 end
+
+df_bad[1, :patch_directories]
+
+df_bad.source_url in "files in directory"
+
+a = get_patch_directories(df_bad[1, :source_url])
+
