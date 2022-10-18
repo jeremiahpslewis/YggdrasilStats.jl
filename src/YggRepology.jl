@@ -90,8 +90,8 @@ function gather_all_binary_info()
     myauth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
     binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
     full_binary_metadata = [
-        get_binary_info(repository_name, myauth) for
-        repository_name in binary_repositories[1]
+        get_binary_info(repository, myauth) for
+        repository in binary_repositories[1]
     ]
     return full_binary_metadata
 end
@@ -108,10 +108,10 @@ repository_list_ = repository_list[1:100]
 repository = repository_list[1]
 repository_name = repository.full_name
 
-get_binary_info(repository_name, myauth)
+get_binary_info(repository, myauth)
 
 full_binary_metadata = [
-    get_binary_info(repository_name, myauth) for repository_name in repository_list_
+    get_binary_info(repository, myauth) for repository in repository_list_
 ]
 
 df = DataFrame(full_binary_metadata)
