@@ -64,17 +64,16 @@ function get_toml_metadata(repository_name::String, auth::GitHub.OAuth2)
 
         binary_name = @chain project_toml["name"] replace("_jll" => "")
         version = project_toml["version"]
-    
+
         # TODO: loop over all platforms to get platform metadata
         # platform_triple = @chain artifacts_toml[binary_name][1] begin
         #    "$(_["arch"])-$(_["os"])-$(_["libc"])"
         # end
-    
+
         return Dict(:binary_name => binary_name, :version => version)
     catch
         return Dict()
     end
-
 end
 # Sketch in requirements https://repology.org/docs/requirements
 
@@ -83,7 +82,7 @@ function get_binary_info(repository::Repo, auth::GitHub.OAuth2)
     return Dict(
         get_readme_metadata(repository_name, auth)...,
         get_toml_metadata(repository_name, auth)...,
-        :update_date => repository.updated_at
+        :update_date => repository.updated_at,
     )
 end
 
@@ -91,8 +90,7 @@ function gather_all_binary_info()
     myauth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
     binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
     full_binary_metadata = [
-        get_binary_info(repository, myauth) for
-        repository in binary_repositories[1]
+        get_binary_info(repository, myauth) for repository in binary_repositories[1]
     ]
     return full_binary_metadata
 end
@@ -110,7 +108,8 @@ end
 
 function get_patch_directories(source_url)
     patch_directories = source_url[occursin.("files in directory", source_url)]
-    patch_directories = replace.(patch_directories, r".*(https://github.com/.*/bundled).*" => s"\1")
+    patch_directories =
+        replace.(patch_directories, r".*(https://github.com/.*/bundled).*" => s"\1")
 
     if length(patch_directories) == 1
         return patch_directories[1]
@@ -120,7 +119,6 @@ function get_patch_directories(source_url)
         return patch_directories
     end
 end
-
 
 myauth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
 binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
@@ -142,9 +140,15 @@ df = DataFrame(full_binary_metadata)
 
 # Full dataset
 df = @chain df begin
-    @transform(:source_url = drop_url_from_list(:source_url),
-               :patch_directories = get_patch_directories(:source_url))
-    @transform(:error = !(:source_url isa String) & (:patch_directories == nothing) | (:patch_directories isa Array))
+    @transform(
+        :source_url = drop_url_from_list(:source_url),
+        :patch_directories = get_patch_directories(:source_url)
+    )
+    @transform(
+        :error =
+            !(:source_url isa String) & (:patch_directories == nothing) |
+            (:patch_directories isa Array)
+    )
 end
 
 CSV.write("full_binary_metadata.csv", df)
