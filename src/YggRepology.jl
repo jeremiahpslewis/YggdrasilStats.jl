@@ -65,17 +65,17 @@ end
 function get_toml_metadata(repository_name::String, auth::GitHub.OAuth2)
     try
         project_toml = get_toml_file(repository_name, "Project.toml", auth)
-        artifacts_toml = get_toml_file(repository_name, "Artifacts.toml", auth)
 
-        binary_name = @chain project_toml["name"] replace("_jll" => "")
         version = project_toml["version"]
+        version = replace(version, r"\+[0-9]+" => "")
 
+        # artifacts_toml = get_toml_file(repository_name, "Artifacts.toml", auth)
         # TODO: loop over all platforms to get platform metadata
         # platform_triple = @chain artifacts_toml[binary_name][1] begin
         #    "$(_["arch"])-$(_["os"])-$(_["libc"])"
         # end
 
-        return Dict(:binary_name => binary_name, :version => version)
+        return Dict(:version => version)
     catch
         return Dict()
     end
@@ -90,6 +90,7 @@ function get_binary_info(repository::Repo, auth::GitHub.OAuth2)
         get_toml_metadata(repository_name, auth)...,
         :update_date => repository.updated_at,
         :pushed_at => repository.pushed_at,
+        :binary_name => replace(repository.name, "_jll.jl" => ""),
     )
 end
 
@@ -134,14 +135,14 @@ binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
 repository_list = binary_repositories[1]
 repository = repository_list[1]
 
-repository_list_ = repository_list[1:100]
+repository_list_ = repository_list[101:200]
 repository = repository_list[1]
 repository_name = repository.full_name
 
 get_binary_info(repository, myauth)
 
 full_binary_metadata = [
-    get_binary_info(repository, myauth) for repository in repository_list
+    get_binary_info(repository, myauth) for repository in repository_list if repository.updated_at > Date("2021-01-01")
 ]
 
 df = DataFrame(full_binary_metadata)
