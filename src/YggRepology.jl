@@ -66,7 +66,6 @@ full_binary_metadata = [
 
 df = DataFrame([i for i in full_binary_metadata if haskey(i, :version)])
 
-# TODO: Debug Openresty, why version info not collected
 # Full dataset
 df = @chain df begin
     @transform(
