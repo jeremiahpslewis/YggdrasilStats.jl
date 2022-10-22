@@ -161,11 +161,9 @@ df = @chain df begin
     )
 end
 
-# CSV.write("full_binary_metadata.csv", df)
-
 df_good = @chain df begin
     @subset(:error != true)
-    # @select(:binary_name, :version, :source_url, :recipe_url)
+    @select(:binary_name, :version, :source_url, :recipe_url, :update_date, :patch_directories)
 end
 
 open("full_binary_metadata.json", "w") do f
