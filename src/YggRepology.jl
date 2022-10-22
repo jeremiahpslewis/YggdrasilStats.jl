@@ -141,7 +141,7 @@ repository_name = repository.full_name
 get_binary_info(repository, myauth)
 
 full_binary_metadata = [
-    get_binary_info(repository, myauth) for repository in repository_list_
+    get_binary_info(repository, myauth) for repository in repository_list
 ]
 
 df = DataFrame(full_binary_metadata)
