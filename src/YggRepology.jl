@@ -11,6 +11,7 @@ using DataFrameMacros
 using CSV
 using JSON3
 using JSONTables
+using Dates
 
 function get_file(repository_name, filename, auth::GitHub.OAuth2)
     @chain repository_name begin
@@ -149,13 +150,14 @@ df = DataFrame(full_binary_metadata)
 df = @chain df begin
     @transform(
         :source_url = drop_url_from_list(:source_url),
-        :patch_directories = get_patch_directories(:source_url)
+        :patch_directories = get_patch_directories(:source_url),
+        :update_date = :update_date,
+        :pushed_at = :pushed_at,
     )
     @transform(
         :error =
-            !(:source_url isa String) &
-            (:patch_directories === missing) | (:patch_directories isa Array) &
-            (:update_date > "2021-01-01")
+            !(:source_url isa String) |
+            (:update_date < Date("2021-01-01"))
     )
 end
 
@@ -163,7 +165,7 @@ end
 
 df_good = @chain df begin
     @subset(:error != true)
-    @select(:binary_name, :version, :source_url, :recipe_url)
+    # @select(:binary_name, :version, :source_url, :recipe_url)
 end
 
 open("full_binary_metadata.json", "w") do f
