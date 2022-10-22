@@ -56,23 +56,23 @@ function extract_readme_metadata(readme_text)
     return Dict(:source_url => source_url, :recipe_url => recipe_url)
 end
 
-function get_readme_metadata(repository_name::String, auth::GitHub.OAuth2)
+function get_readme_metadata(repository_name::String)
     try
-        readme_text = get_readme(repository_name, auth)
+        readme_text = get_readme(repository_name)
         return extract_readme_metadata(readme_text)
     catch
         return Dict()
     end
 end
 
-function get_toml_metadata(repository_name::String, auth::GitHub.OAuth2)
+function get_toml_metadata(repository_name::String)
     try
-        project_toml = get_toml_file(repository_name, "Project.toml", auth)
+        project_toml = get_toml_file(repository_name, "Project.toml")
 
         version = project_toml["version"]
         version = replace(version, r"\+[0-9]+" => "")
 
-        # artifacts_toml = get_toml_file(repository_name, "Artifacts.toml", auth)
+        # artifacts_toml = get_toml_file(repository_name, "Artifacts.toml")
         # TODO: loop over all platforms to get platform metadata
         # platform_triple = @chain artifacts_toml[binary_name][1] begin
         #    "$(_["arch"])-$(_["os"])-$(_["libc"])"
@@ -86,11 +86,11 @@ end
 
 # Sketch in requirements https://repology.org/docs/requirements
 
-function get_binary_info(repository::Repo, auth::GitHub.OAuth2)
+function get_binary_info(repository::Repo)
     repository_name = repository.full_name
     return Dict(
-        get_readme_metadata(repository_name, auth)...,
-        get_toml_metadata(repository_name, auth)...,
+        get_readme_metadata(repository_name)...,
+        get_toml_metadata(repository_name)...,
         :update_date => repository.updated_at,
         :pushed_at => repository.pushed_at,
         :binary_name => replace(repository.name, "_jll.jl" => ""),
@@ -101,7 +101,7 @@ function gather_all_binary_info()
     auth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
     binary_repositories = repos("JuliaBinaryWrappers"; auth=auth)
     full_binary_metadata = [
-        get_binary_info(repository, auth) for repository in binary_repositories[1]
+        get_binary_info(repository) for repository in binary_repositories[1]
     ]
     return full_binary_metadata
 end
@@ -142,10 +142,10 @@ repository_list_ = repository_list[101:200]
 repository = repository_list[1]
 repository_name = repository.full_name
 
-get_binary_info(repository, myauth)
+get_binary_info(repository)
 
 full_binary_metadata = [
-    get_binary_info(repository, myauth) for repository in repository_list if repository.updated_at > Date("2021-01-01")
+    get_binary_info(repository) for repository in repository_list if repository.updated_at > Date("2021-01-01")
 ]
 
 df = DataFrame(full_binary_metadata)
