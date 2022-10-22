@@ -58,3 +58,15 @@ function get_toml_metadata(repository_name::String)
         return Dict()
     end
 end
+
+function drop_url_from_list(x)
+    x = replace.(x, r" \(revision: .*" => "")
+    x = replace.(x, r" \(SHA256 checksum.*" => "")
+    x = replace.(x, r".*(https?://.*)" => s"\1")
+
+    if length(x) != 1
+        return x
+    else
+        return x[1]
+    end
+end

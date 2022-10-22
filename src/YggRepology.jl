@@ -14,8 +14,6 @@ using HTTP
 
 include("utils.jl")
 
-
-
 function get_binary_info(repository::Repo)
     repository_name = repository.full_name
     return Dict(
@@ -34,18 +32,6 @@ function gather_all_binary_info()
         get_binary_info(repository) for repository in binary_repositories[1]
     ]
     return full_binary_metadata
-end
-
-function drop_url_from_list(x)
-    x = replace.(x, r" \(revision: .*" => "")
-    x = replace.(x, r" \(SHA256 checksum.*" => "")
-    x = replace.(x, r".*(https?://.*)" => s"\1")
-
-    if length(x) != 1
-        return x
-    else
-        return x[1]
-    end
 end
 
 function get_patch_directories(source_url)
@@ -78,8 +64,9 @@ full_binary_metadata = [
     get_binary_info(repository) for repository in repository_list if repository.updated_at > Date("2021-01-01")
 ]
 
-df = DataFrame(full_binary_metadata)
+df = DataFrame([i for i in full_binary_metadata if haskey(i, :version)])
 
+# TODO: Debug Openresty, why version info not collected
 # Full dataset
 df = @chain df begin
     @transform(
