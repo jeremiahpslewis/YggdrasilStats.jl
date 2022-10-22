@@ -9,6 +9,8 @@ using TOML
 using DataFrames
 using DataFrameMacros
 using CSV
+using JSON3
+using JSONTables
 
 function get_file(repository_name, filename, auth::GitHub.OAuth2)
     @chain repository_name begin
@@ -34,6 +36,8 @@ function get_readme(repository_name, auth::GitHub.OAuth2)
     end
 end
 
+""
+
 function extract_readme_metadata(readme_text)
     source_url = @chain readme_text begin
         replace("\n" => " ")
@@ -43,7 +47,7 @@ function extract_readme_metadata(readme_text)
     end
     recipe_url = @chain readme_text begin
         replace("\n" => " ")
-        replace(r".*(https://github.com/JuliaPackaging/Yggdrasil/blob/.*.jl\)).*" => s"\1")
+        replace(r".*(https://github.com/JuliaPackaging/Yggdrasil/blob/[^\)]+build_tarballs\.jl)\).*" => s"\1")
     end
     return Dict(:source_url => source_url, :recipe_url => recipe_url)
 end
@@ -59,8 +63,8 @@ end
 
 function get_toml_metadata(repository_name::String, auth::GitHub.OAuth2)
     try
-        project_toml = get_toml_file(repository_name, "Project.toml", myauth)
-        artifacts_toml = get_toml_file(repository_name, "Artifacts.toml", myauth)
+        project_toml = get_toml_file(repository_name, "Project.toml", auth)
+        artifacts_toml = get_toml_file(repository_name, "Artifacts.toml", auth)
 
         binary_name = @chain project_toml["name"] replace("_jll" => "")
         version = project_toml["version"]
@@ -75,6 +79,7 @@ function get_toml_metadata(repository_name::String, auth::GitHub.OAuth2)
         return Dict()
     end
 end
+
 # Sketch in requirements https://repology.org/docs/requirements
 
 function get_binary_info(repository::Repo, auth::GitHub.OAuth2)
@@ -83,19 +88,21 @@ function get_binary_info(repository::Repo, auth::GitHub.OAuth2)
         get_readme_metadata(repository_name, auth)...,
         get_toml_metadata(repository_name, auth)...,
         :update_date => repository.updated_at,
+        :pushed_at => repository.pushed_at,
     )
 end
 
 function gather_all_binary_info()
-    myauth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
-    binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
+    auth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
+    binary_repositories = repos("JuliaBinaryWrappers"; auth=auth)
     full_binary_metadata = [
-        get_binary_info(repository, myauth) for repository in binary_repositories[1]
+        get_binary_info(repository, auth) for repository in binary_repositories[1]
     ]
     return full_binary_metadata
 end
 
 function drop_url_from_list(x)
+    x = replace.(x, r" \(revision: .*" => "")
     x = replace.(x, r" \(SHA256 checksum.*" => "")
     x = replace.(x, r".*(https?://.*)" => s"\1")
 
@@ -114,7 +121,7 @@ function get_patch_directories(source_url)
     if length(patch_directories) == 1
         return patch_directories[1]
     elseif length(patch_directories) == 0
-        return nothing
+        return missing
     else
         return patch_directories
     end
@@ -133,7 +140,7 @@ repository_name = repository.full_name
 get_binary_info(repository, myauth)
 
 full_binary_metadata = [
-    get_binary_info(repository, myauth) for repository in repository_list
+    get_binary_info(repository, myauth) for repository in repository_list_
 ]
 
 df = DataFrame(full_binary_metadata)
@@ -146,9 +153,20 @@ df = @chain df begin
     )
     @transform(
         :error =
-            !(:source_url isa String) & (:patch_directories == nothing) |
-            (:patch_directories isa Array)
+            !(:source_url isa String) &
+            (:patch_directories === missing) | (:patch_directories isa Array) &
+            (:update_date > "2021-01-01")
     )
 end
 
-CSV.write("full_binary_metadata.csv", df)
+# CSV.write("full_binary_metadata.csv", df)
+
+df_good = @chain df begin
+    @subset(:error != true)
+    @select(:binary_name, :version, :source_url, :recipe_url)
+end
+
+open("full_binary_metadata.json", "w") do f
+    JSONTables.arraytable(f, df_good)
+end
+
