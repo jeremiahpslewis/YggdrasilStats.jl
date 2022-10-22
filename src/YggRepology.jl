@@ -12,6 +12,7 @@ using CSV
 using JSON3
 using JSONTables
 using Dates
+using HTTP
 
 function get_file(repository_name, filename, auth::GitHub.OAuth2)
     @chain repository_name begin
@@ -22,22 +23,24 @@ function get_file(repository_name, filename, auth::GitHub.OAuth2)
     end
 end
 
-function get_toml_file(repository_name, filename, auth::GitHub.OAuth2)
-    @chain get_file(repository_name, filename, auth) begin
+"https"
+
+
+
+function get_toml_file(repository_name, filename)
+    @chain "https://raw.githubusercontent.com/JuliaBinaryWrappers/$repository_name/master/$filename?raw=true" begin
+        HTTP.get
+        String(_.body)
         TOML.parse
     end
 end
 
-function get_readme(repository_name, auth::GitHub.OAuth2)
-    @chain repository_name begin
-        readme(; auth=auth)
-        _.content
-        base64decode
-        String
+function get_readme(repository_name)
+    @chain "https://raw.githubusercontent.com/JuliaBinaryWrappers/$repository_name/master/README.md?raw=true" begin
+        HTTP.get
+        String(_.body)
     end
 end
-
-""
 
 function extract_readme_metadata(readme_text)
     source_url = @chain readme_text begin
