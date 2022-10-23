@@ -2,23 +2,23 @@ using Test
 using YggRepology
 
 @testset "YggRepology utils" begin
-    @test get_toml_file("JuliaBinaryWrappers/bmon_jll.jl", "Project.toml")["version"] >= "3"
+    @test YggRepology.get_toml_file("JuliaBinaryWrappers/DuckDB_jll.jl", "Project.toml", "main")["version"] >= "0.2"
 
-    @test get_readme("JuliaBinaryWrappers/bmon_jll.jl") isa String
+    @test YggRepology.get_readme("JuliaBinaryWrappers/DuckDB_jll.jl", "main") isa String
 
     @test occursin(
         "git repository: ",
-        extract_readme_metadata(get_readme("JuliaBinaryWrappers/DuckDB_jll.jl"))[:source_url][1],
+        YggRepology.extract_readme_metadata(YggRepology.get_readme("JuliaBinaryWrappers/DuckDB_jll.jl", "main"))[:source_url][1],
     )
 
     @test occursin(
         "git repository: ",
-        get_readme_metadata("JuliaBinaryWrappers/DuckDB_jll.jl")[:source_url][1],
+        YggRepology.get_readme_metadata("JuliaBinaryWrappers/DuckDB_jll.jl", "main")[:source_url][1],
     )
     
-    @test get_toml_metadata("JuliaBinaryWrappers/DuckDB_jll.jl")[:version] >= "0.2.5"
+    @test YggRepology.get_toml_metadata("JuliaBinaryWrappers/DuckDB_jll.jl", "main")[:version] >= "0.2.5"
 
-    drop_url_from_list([""]
+    # drop_url_from_list([""]
 end
 
 

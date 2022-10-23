@@ -15,9 +15,11 @@ include("utils.jl")
 
 function get_binary_info(repository::Repo)
     repository_name = repository.full_name
+    default_branch = repository.default_branch
+
     return Dict(
-        get_readme_metadata(repository_name)...,
-        get_toml_metadata(repository_name)...,
+        get_readme_metadata(repository_name, default_branch)...,
+        get_toml_metadata(repository_name, default_branch)...,
         :update_date => repository.updated_at,
         :pushed_at => repository.pushed_at,
         :binary_name => replace(repository.name, "_jll.jl" => ""),
