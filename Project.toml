@@ -1,3 +1,8 @@
+name = "YggRepology"
+uuid = "63713dd9-2491-4626-852b-dd5331b9c228"
+authors = ["Jeremiah Lewis <hello@jeremiahlewis.me>"]
+version = "0.0.1"
+
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Chain = "8be319e6-bccf-4806-a6f7-6fae938471bc"
