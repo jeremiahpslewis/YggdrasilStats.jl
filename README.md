@@ -9,7 +9,6 @@ This metadata can be used to optimize Yggdrasil as well as a source for Repology
 
 TODO:
 
-Build testset
 Autocommit JSON / CSV output
 Ensure all requirements covered https://repology.org/docs/requirements
 Spot-check for accuracy

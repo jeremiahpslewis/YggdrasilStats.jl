@@ -26,11 +26,15 @@ function get_binary_info(repository::Repo)
     )
 end
 
-function gather_all_binary_info()
+function gather_all_binary_info(; maxrepos=nothing)
     auth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
-    binary_repositories = repos("JuliaBinaryWrappers"; auth=auth)
+    binary_repositories = repos("JuliaBinaryWrappers"; auth=auth)[1]
+    if maxrepos !== nothing
+        binary_repositories = binary_repositories[1:maxrepos]
+    end
+
     full_binary_metadata = [
-        get_binary_info(repository) for repository in binary_repositories[1]
+        get_binary_info(repository) for repository in binary_repositories
     ]
     return full_binary_metadata
 end

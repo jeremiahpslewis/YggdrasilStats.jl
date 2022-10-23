@@ -25,7 +25,7 @@ using GitHub
 end
 
 @testset "YggRepology Integration Tests" begin
-    binary_info = YggRepology.gather_all_binary_info()
+    binary_info = YggRepology.gather_all_binary_info(maxrepos=10)
     @test binary_info isa list
     @test length(binary_info) > 500
 
