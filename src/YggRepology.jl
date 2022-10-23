@@ -47,9 +47,9 @@ function export_all_binary_info(; maxrepos=nothing)
 
     # Full dataset
     df = @chain df begin
+        @transform(:patch_directories = @passmissing get_patch_directories(:source_url))
+        @transform(:source_url = @passmissing drop_url_from_list(:source_url))
         @transform(
-            :source_url = drop_url_from_list(:source_url),
-            :patch_directories = get_patch_directories(:source_url),
             :update_date = :update_date,
             :pushed_at = :pushed_at,
         )
