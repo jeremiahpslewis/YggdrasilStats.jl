@@ -28,9 +28,9 @@ using Dates
 end
 
 @testset "YggRepology Integration Tests" begin
-    full_binary_metadata = YggRepology.gather_all_binary_info(maxrepos=10)
+    full_binary_metadata = YggRepology.gather_all_binary_info(; maxrepos=10)
     @test full_binary_metadata isa list
-    @test length(full_binary_metadata) == 10 500
+    @test length(full_binary_metadata) == 10
 
     # export_all_binary_info()
 
