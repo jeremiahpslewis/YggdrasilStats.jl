@@ -1,6 +1,7 @@
 using Test
 using YggRepology
 using GitHub
+using Dates
 
 @testset "YggRepology utils" begin
     @test YggRepology.get_toml_file("JuliaBinaryWrappers/DuckDB_jll.jl", "Project.toml", "main")["version"] >= "0.2"
