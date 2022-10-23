@@ -18,12 +18,18 @@ function get_readme(repository_name, default_branch)
 end
 
 function extract_readme_metadata(readme_text)
-    source_url = @chain readme_text begin
-        replace("\n" => " ")
-        replace(r".* have been built from these sources:  (.*)  ## Platforms.*" => s"\1")
-        split("* ")
-        filter(x -> x != "", _)
+    # if ## sources in text then run next line
+    if occursin("## Sources", readme_text)
+        source_url = @chain readme_text begin
+            replace("\n" => " ")
+            replace(r".* have been built from these sources:  (.*)  ## Platforms.*" => s"\1")
+            split("* ")
+            filter(x -> x != "", _)
+        end
+    else
+        source_url = missing
     end
+
     recipe_url = @chain readme_text begin
         replace("\n" => " ")
         replace(
@@ -31,6 +37,7 @@ function extract_readme_metadata(readme_text)
                 s"\1",
         )
     end
+
     return Dict(:source_url => source_url, :recipe_url => recipe_url)
 end
 
@@ -71,5 +78,19 @@ function drop_url_from_list(x)
         return x
     else
         return x[1]
+    end
+end
+
+function get_patch_directories(source_url)
+    patch_directories = source_url[occursin.("files in directory", source_url)]
+    patch_directories =
+        replace.(patch_directories, r".*(https://github.com/.*/bundled).*" => s"\1")
+
+    if length(patch_directories) == 1
+        return patch_directories[1]
+    elseif length(patch_directories) == 0
+        return missing
+    else
+        return patch_directories
     end
 end
