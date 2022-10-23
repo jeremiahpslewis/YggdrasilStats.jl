@@ -52,7 +52,7 @@ end
 
 function get_toml_metadata(repository_name::String, default_branch::String)
     try
-        project_toml = get_toml_file(repository_name, "Project.toml", default_branchlll)
+        project_toml = get_toml_file(repository_name, "Project.toml", default_branch)
 
         version = project_toml["version"]
         version = replace(version, r"\+[0-9]+" => "")
