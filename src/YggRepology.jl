@@ -39,22 +39,9 @@ function gather_all_binary_info(; maxrepos=nothing)
     return full_binary_metadata
 end
 
-function get_patch_directories(source_url)
-    patch_directories = source_url[occursin.("files in directory", source_url)]
-    patch_directories =
-        replace.(patch_directories, r".*(https://github.com/.*/bundled).*" => s"\1")
 
-    if length(patch_directories) == 1
-        return patch_directories[1]
-    elseif length(patch_directories) == 0
-        return missing
-    else
-        return patch_directories
-    end
-end
-
-function export_all_binary_info()
-    full_binary_metadata = gather_all_binary_info()
+function export_all_binary_info(; maxrepos=nothing)
+    full_binary_metadata = gather_all_binary_info(; maxrepos=maxrepos)
 
     df = DataFrame([i for i in full_binary_metadata if haskey(i, :version)])
 
@@ -66,7 +53,7 @@ function export_all_binary_info()
             :update_date = :update_date,
             :pushed_at = :pushed_at,
         )
-        @transform(:error = !(:source_url isa String) | (:update_date < Date("2021-01-01")))
+        @transform(:error = !(:source_url isa String))
     end
 
     df_good = @chain df begin
@@ -77,7 +64,7 @@ function export_all_binary_info()
     end
 
     open("full_binary_metadata.json", "w") do f
-        JSONTables.arraytable(f, df_good)
+        JSON3.pretty(f, JSONTables.arraytable(df_good))
     end
 
     return df
