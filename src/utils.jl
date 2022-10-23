@@ -26,7 +26,10 @@ function extract_readme_metadata(readme_text)
     end
     recipe_url = @chain readme_text begin
         replace("\n" => " ")
-        replace(r".*(https://github.com/JuliaPackaging/Yggdrasil/blob/[^\)]+build_tarballs\.jl)\).*" => s"\1")
+        replace(
+            r".*(https://github.com/JuliaPackaging/Yggdrasil/blob/[^\)]+build_tarballs\.jl)\).*" =>
+                s"\1",
+        )
     end
     return Dict(:source_url => source_url, :recipe_url => recipe_url)
 end

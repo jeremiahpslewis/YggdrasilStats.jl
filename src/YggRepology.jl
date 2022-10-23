@@ -61,7 +61,8 @@ repository_name = repository.full_name
 get_binary_info(repository)
 
 full_binary_metadata = [
-    get_binary_info(repository) for repository in repository_list if repository.updated_at > Date("2021-01-01")
+    get_binary_info(repository) for
+    repository in repository_list if repository.updated_at > Date("2021-01-01")
 ]
 
 df = DataFrame([i for i in full_binary_metadata if haskey(i, :version)])
@@ -74,21 +75,18 @@ df = @chain df begin
         :update_date = :update_date,
         :pushed_at = :pushed_at,
     )
-    @transform(
-        :error =
-            !(:source_url isa String) |
-            (:update_date < Date("2021-01-01"))
-    )
+    @transform(:error = !(:source_url isa String) | (:update_date < Date("2021-01-01")))
 end
 
 df_good = @chain df begin
     @subset(:error != true)
-    @select(:binary_name, :version, :source_url, :recipe_url, :update_date, :patch_directories)
+    @select(
+        :binary_name, :version, :source_url, :recipe_url, :update_date, :patch_directories
+    )
 end
 
 open("full_binary_metadata.json", "w") do f
     JSONTables.arraytable(f, df_good)
 end
-
 
 end
