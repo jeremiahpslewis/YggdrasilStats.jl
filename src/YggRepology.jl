@@ -1,7 +1,6 @@
 module YggRepology
 
 using GitHub
-using Base64
 using Chain
 using TOML
 using DataFrames
@@ -48,45 +47,34 @@ function get_patch_directories(source_url)
     end
 end
 
-myauth = GitHub.authenticate(ENV["GITHUB_TOKEN"])
-binary_repositories = repos("JuliaBinaryWrappers"; auth=myauth)
+function export_all_binary_info()
+    full_binary_metadata = gather_all_binary_info()
 
-repository_list = binary_repositories[1]
-repository = repository_list[1]
+    df = DataFrame([i for i in full_binary_metadata if haskey(i, :version)])
 
-repository_list_ = repository_list[101:200]
-repository = repository_list[1]
-repository_name = repository.full_name
+    # Full dataset
+    df = @chain df begin
+        @transform(
+            :source_url = drop_url_from_list(:source_url),
+            :patch_directories = get_patch_directories(:source_url),
+            :update_date = :update_date,
+            :pushed_at = :pushed_at,
+        )
+        @transform(:error = !(:source_url isa String) | (:update_date < Date("2021-01-01")))
+    end
 
-get_binary_info(repository)
+    df_good = @chain df begin
+        @subset(:error != true)
+        @select(
+            :binary_name, :version, :source_url, :recipe_url, :update_date, :patch_directories
+        )
+    end
 
-full_binary_metadata = [
-    get_binary_info(repository) for
-    repository in repository_list if repository.updated_at > Date("2021-01-01")
-]
+    open("full_binary_metadata.json", "w") do f
+        JSONTables.arraytable(f, df_good)
+    end
 
-df = DataFrame([i for i in full_binary_metadata if haskey(i, :version)])
-
-# Full dataset
-df = @chain df begin
-    @transform(
-        :source_url = drop_url_from_list(:source_url),
-        :patch_directories = get_patch_directories(:source_url),
-        :update_date = :update_date,
-        :pushed_at = :pushed_at,
-    )
-    @transform(:error = !(:source_url isa String) | (:update_date < Date("2021-01-01")))
+    return df
 end
 
-df_good = @chain df begin
-    @subset(:error != true)
-    @select(
-        :binary_name, :version, :source_url, :recipe_url, :update_date, :patch_directories
-    )
-end
-
-open("full_binary_metadata.json", "w") do f
-    JSONTables.arraytable(f, df_good)
-end
-
-end
+end # module
