@@ -17,14 +17,14 @@ using Dates
         "git repository: ",
         YggRepology.get_readme_metadata("JuliaBinaryWrappers/DuckDB_jll.jl", "main")[:source_url][1],
     )
-    
+
     @test YggRepology.get_toml_metadata("JuliaBinaryWrappers/DuckDB_jll.jl", "main")[:version] >= "0.2.5"
 
     @test YggRepology.drop_url_from_list(["git repository: https://github.com/duckdb/duckdb.git (revision: `7c111322de1095436350f95e33c5553b09302165`)"]) == "https://github.com/duckdb/duckdb.git"
 
-    @test [keys(YggRepology.get_binary_info(GitHub.Repo(; full_name = "JuliaBinaryWrappers/DuckDB_jll.jl", name = "DuckDB_jll.jl", default_branch = "main", updated_at = Date("2021-01-01"), pushed_at = Date("2021-01-01"))))...] == [:update_date, :pushed_at, :binary_name, :version, :source_url, :recipe_url]
+    @test [keys(YggRepology.get_binary_info(GitHub.Repo(; full_name="JuliaBinaryWrappers/DuckDB_jll.jl", name="DuckDB_jll.jl", default_branch="main", updated_at=Date("2021-01-01"), pushed_at=Date("2021-01-01"))))...] == [:update_date, :pushed_at, :binary_name, :version, :source_url, :recipe_url]
 
-    # @test get_patch_directories(["git repository:
+    @test YggRepology.get_patch_directories(["files in directory, relative to originating `build_tarballs.jl`: [`./bundled`](https://github.com/JuliaPackaging/Yggdrasil/tree/79392e93b061260f0982507eb5ed3f697e169f11/B/Blosc/bundled)"]) == "https://github.com/JuliaPackaging/Yggdrasil/tree/79392e93b061260f0982507eb5ed3f697e169f11/B/Blosc/bundled"
 end
 
 @testset "YggRepology Integration Tests" begin
