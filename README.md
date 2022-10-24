@@ -19,3 +19,4 @@ Ensure all requirements covered https://repology.org/docs/requirements
 Spot-check for accuracy
 Filter out implausible versions (via comparison / dropping * 100 versions)
 Debug Openresty, why version info not collected
+Capture time series aspect / earlier versions
