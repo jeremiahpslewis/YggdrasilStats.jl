@@ -1,4 +1,8 @@
-# YggdrasilStats
+# YggdrasilStats.jl
+
+## Purpose
+
+Make Yggdrasil binary statistics easily available.
 
 **Note: This is very much a work in progress**
 
