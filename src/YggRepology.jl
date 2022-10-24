@@ -39,7 +39,6 @@ function gather_all_binary_info(; maxrepos=nothing)
     return full_binary_metadata
 end
 
-
 function export_all_binary_info(; maxrepos=nothing)
     full_binary_metadata = gather_all_binary_info(; maxrepos=maxrepos)
 
@@ -49,17 +48,19 @@ function export_all_binary_info(; maxrepos=nothing)
     df = @chain df begin
         @transform(:patch_directories = @passmissing get_patch_directories(:source_url))
         @transform(:source_url = @passmissing drop_url_from_list(:source_url))
-        @transform(
-            :update_date = :update_date,
-            :pushed_at = :pushed_at,
-        )
+        @transform(:update_date = :update_date, :pushed_at = :pushed_at,)
         @transform(:error = !(:source_url isa String))
     end
 
     df_good = @chain df begin
         @subset(:error != true)
         @select(
-            :binary_name, :version, :source_url, :recipe_url, :update_date, :patch_directories
+            :binary_name,
+            :version,
+            :source_url,
+            :recipe_url,
+            :update_date,
+            :patch_directories
         )
     end
 
