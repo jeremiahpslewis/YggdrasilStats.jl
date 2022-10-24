@@ -1,4 +1,4 @@
-# YggRepology
+# YggdrasilStats
 
 **Note: This is very much a work in progress**
 

@@ -1,39 +1,39 @@
 using Test
-using YggRepology
+using YggdrasilStats
 using GitHub
 using Dates
 
-@testset "YggRepology utils" begin
-    @test YggRepology.get_toml_file(
+@testset "YggdrasilStats utils" begin
+    @test YggdrasilStats.get_toml_file(
         "JuliaBinaryWrappers/DuckDB_jll.jl",
         "Project.toml",
         "main",
     )["version"] >= "0.2"
 
-    @test YggRepology.get_readme("JuliaBinaryWrappers/DuckDB_jll.jl", "main") isa String
+    @test YggdrasilStats.get_readme("JuliaBinaryWrappers/DuckDB_jll.jl", "main") isa String
 
     @test occursin(
         "git repository: ",
-        YggRepology.extract_readme_metadata(
-            YggRepology.get_readme("JuliaBinaryWrappers/DuckDB_jll.jl", "main"),
+        YggdrasilStats.extract_readme_metadata(
+            YggdrasilStats.get_readme("JuliaBinaryWrappers/DuckDB_jll.jl", "main"),
         )[:source_url][1],
     )
 
     @test occursin(
         "git repository: ",
-        YggRepology.get_readme_metadata("JuliaBinaryWrappers/DuckDB_jll.jl", "main")[:source_url][1],
+        YggdrasilStats.get_readme_metadata("JuliaBinaryWrappers/DuckDB_jll.jl", "main")[:source_url][1],
     )
 
-    @test YggRepology.get_toml_metadata("JuliaBinaryWrappers/DuckDB_jll.jl", "main")[:version] >=
+    @test YggdrasilStats.get_toml_metadata("JuliaBinaryWrappers/DuckDB_jll.jl", "main")[:version] >=
           "0.2.5"
 
-    @test YggRepology.drop_url_from_list([
+    @test YggdrasilStats.drop_url_from_list([
         "git repository: https://github.com/duckdb/duckdb.git (revision: `7c111322de1095436350f95e33c5553b09302165`)",
     ]) == "https://github.com/duckdb/duckdb.git"
 
     @test [
         keys(
-            YggRepology.get_binary_info(
+            YggdrasilStats.get_binary_info(
                 GitHub.Repo(;
                     full_name = "JuliaBinaryWrappers/DuckDB_jll.jl",
                     name = "DuckDB_jll.jl",
@@ -45,14 +45,14 @@ using Dates
         )...,
     ] == [:update_date, :pushed_at, :binary_name, :version, :source_url, :recipe_url]
 
-    @test YggRepology.get_patch_directories([
+    @test YggdrasilStats.get_patch_directories([
         "files in directory, relative to originating `build_tarballs.jl`: [`./bundled`](https://github.com/JuliaPackaging/Yggdrasil/tree/79392e93b061260f0982507eb5ed3f697e169f11/B/Blosc/bundled)",
     ]) ==
           "https://github.com/JuliaPackaging/Yggdrasil/tree/79392e93b061260f0982507eb5ed3f697e169f11/B/Blosc/bundled"
 end
 
-@testset "YggRepology Integration Tests" begin
-    full_binary_metadata = YggRepology.gather_all_binary_info(; maxrepos = 10)
+@testset "YggdrasilStats Integration Tests" begin
+    full_binary_metadata = YggdrasilStats.gather_all_binary_info(; maxrepos = 10)
     @test full_binary_metadata isa Array
     @test length(full_binary_metadata) == 10
 
@@ -61,4 +61,4 @@ end
 end
 
 
-# full_binary_metadata = YggRepology.gather_all_binary_info()
+# full_binary_metadata = YggdrasilStats.gather_all_binary_info()

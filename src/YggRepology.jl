@@ -1,4 +1,4 @@
-module YggRepology
+module YggdrasilStats
 
 using GitHub
 using Chain
