@@ -22,7 +22,9 @@ function extract_readme_metadata(readme_text)
     if occursin("## Sources", readme_text)
         source_url = @chain readme_text begin
             replace("\n" => " ")
-            replace(r".* have been built from these sources:  (.*)  ## Platforms.*" => s"\1")
+            replace(
+                r".* have been built from these sources:  (.*)  ## Platforms.*" => s"\1"
+            )
             split("* ")
             filter(x -> x != "", _)
         end
