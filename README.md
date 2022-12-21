@@ -20,3 +20,4 @@ Spot-check for accuracy
 Filter out implausible versions (via comparison / dropping * 100 versions)
 Debug Openresty, why version info not collected
 Capture time series aspect / earlier versions
+Go through binaries with multiple 'version' variables in build_tarballs.jl, select 'correct' variable name and add to config file, use this to expand 'version verified' binaries

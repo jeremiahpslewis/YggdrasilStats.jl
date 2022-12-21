@@ -55,9 +55,6 @@ end
     full_binary_metadata = YggdrasilStats.gather_all_binary_info(; maxrepos = 10)
     @test full_binary_metadata isa Array
     @test length(full_binary_metadata) == 10
-
-    # export_all_binary_info()
-
 end
 
 @testset "get_version_vars_from_build_tarballs" begin
