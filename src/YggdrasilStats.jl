@@ -50,8 +50,10 @@ function export_all_binary_info(; maxrepos=nothing)
         @transform(:source_url = @passmissing drop_url_from_list(:source_url))
         @transform(:update_date = :update_date, :pushed_at = :pushed_at,)
         @transform(:error = !(:source_url isa String))
-        @transform(:version_vars = @passmissing get_version_vars_from_build_tarballs(:recipe_url))
-        @transform(:version_verified = @passmissing length(:version_vars) == 1)    
+        @transform(
+            :version_vars = @passmissing get_version_vars_from_build_tarballs(:recipe_url)
+        )
+        @transform(:version_verified = @passmissing length(:version_vars) == 1)
     end
 
     df_good = @chain df begin
@@ -62,9 +64,7 @@ function export_all_binary_info(; maxrepos=nothing)
             :source_url,
             :recipe_url,
             :update_date,
-            :patch_directories
-            :version_vars
-            :version_verified
+            (:patch_directories):version_vars:version_verified
         )
     end
 
@@ -75,7 +75,12 @@ function export_all_binary_info(; maxrepos=nothing)
     return df
 end
 
-get_version_vars(julia_string) = [e.args for e in Meta.parseall(julia_string).args if hasproperty(e, :args) && occursin(r"version|_ver", string(e.args[1]))]
+function get_version_vars(julia_string)
+    return [
+        e.args for e in Meta.parseall(julia_string).args if
+        hasproperty(e, :args) && occursin(r"version|_ver", string(e.args[1]))
+    ]
+end
 
 function get_version_vars_from_build_tarballs(url)
     a = @chain url begin
@@ -84,7 +89,7 @@ function get_version_vars_from_build_tarballs(url)
         String
         get_version_vars
     end
-    sleep(1)
+    return sleep(1)
 end
 
 end # module
