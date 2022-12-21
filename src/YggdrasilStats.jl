@@ -71,4 +71,15 @@ function export_all_binary_info(; maxrepos=nothing)
     return df
 end
 
+get_version_vars(julia_string) = [e.args for e in Meta.parseall(julia_string).args if hasproperty(e, :args) && occursin(r"version|_ver", string(e.args[1]))]
+
+function get_version_vars_from_build_tarballs(url)
+    a = @chain url begin
+        HTTP.get(; query=Dict("raw" => "true"))
+        _.body
+        String
+        get_version_vars
+    end
+end
+
 end # module

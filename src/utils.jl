@@ -39,6 +39,7 @@ function extract_readme_metadata(readme_text)
                 s"\1",
         )
     end
+    recipe_url = occursin(r"build_tarballs.jl$", recipe_url) ? recipe_url : missing
 
     return Dict(:source_url => source_url, :recipe_url => recipe_url)
 end

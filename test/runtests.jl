@@ -1,5 +1,5 @@
 using Test
-using YggdrasilStats
+using YggdrasilStats: YggdrasilStats, get_version_vars_from_build_tarballs, get_version_vars
 using GitHub
 using Dates
 
@@ -60,5 +60,8 @@ end
 
 end
 
-
-# full_binary_metadata = YggdrasilStats.gather_all_binary_info()
+@testset "get_version_vars_from_build_tarballs" begin
+    url = "https://github.com/JuliaPackaging/Yggdrasil/blob/04fc78a66f5149ee7d459e9e5a568dedd2b7214a/A/ABC/build_tarballs.jl"
+    @test length(get_version_vars("version = 1.1; a_version = 1.3")[1]) == 2
+    @test length(get_version_vars_from_build_tarballs(url)) == 2
+end
