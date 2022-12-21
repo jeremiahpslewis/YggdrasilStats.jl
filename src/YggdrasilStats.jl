@@ -64,7 +64,9 @@ function export_all_binary_info(; maxrepos=nothing)
             :source_url,
             :recipe_url,
             :update_date,
-            (:patch_directories):version_vars:version_verified
+            :patch_directories,
+            :version_vars,
+            :version_verified
         )
     end
 
