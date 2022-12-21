@@ -83,13 +83,14 @@ function get_version_vars(julia_string)
 end
 
 function get_version_vars_from_build_tarballs(url)
-    a = @chain url begin
+    ver_vars = @chain url begin
         HTTP.get(; query=Dict("raw" => "true"))
         _.body
         String
         get_version_vars
     end
-    return sleep(1)
+    sleep(1)
+    return ver_vars
 end
 
 end # module
