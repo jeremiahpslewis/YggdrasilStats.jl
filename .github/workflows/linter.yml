@@ -37,7 +37,7 @@
           # Checkout the code base #
           ##########################
           - name: Checkout Code
-            uses: actions/checkout@v2
+            uses: actions/checkout@v3
             with:
               fetch-depth: 0
     
@@ -52,4 +52,5 @@
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               VALIDATE_JSCPD: false
               VALIDATE_DOCKERFILE_HADOLINT: false
+              VALIDATE_YAML: false
     
