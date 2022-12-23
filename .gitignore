@@ -4,4 +4,4 @@
 .vscode/
 *.json
 *.csv
-
+!full_binary_metadata.json
